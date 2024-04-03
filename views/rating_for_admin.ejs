@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rating (Admin)</title>
+    <link rel="icon" href="img/icon.jpg"> 
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+    <h1>Rating (Admin)</h1>
+</header>
+<div id="div-nav" class="container">
+    <a href="/"><img src="img/guitar.png" alt="guitar" class="logo" width="25px"></a> <!-- Adjusted image source -->
+    <nav class="navbar">
+        <ul class="ul-nav-left">
+            <li class="li-nav">
+                <a class="main-page-link" href="/adminDauren1748"><img class="img-nav" src="img/home.png" alt="home"><span>Home</span></a>
+            </li>
+            <li class="li-nav">
+                <a class="main-page-link" href="/rating_for_admin"><img class="img-nav" src="img/rating.png" alt="rating"><span>Rating</span></a>
+            </li>
+            <li class="li-nav">
+                <a class="main-page-link" href="/profiles_for_admin"><img class="img-nav" src="img/user.png" alt="user"><span>Profiles</span></a>
+            </li>
+            <li class="li-nav">
+                <a class="main-page-link" href="/achievements"><img class="img-nav" src="img/achiev.png" alt="achiev"><span>Achievement</span></a>
+            </li>
+        </ul>
+    </nav>
+</div>
+<div class="container">
+<section class="table-sec">
+    <h2 id="year" style="text-align: center;"></h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Position</th>
+                <th>Name</th>
+                <th>Points</th>
+                <th>Add Points</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% let customIndex = 1; %>
+<% profiles.forEach((profile) => { %>
+  <% if (profile.status === 'active') { %>
+    <tr onclick="showDetailsAndAddAchievement('<%= profile._id %>', '<%= profile.name %>', '<%= profile.details %>', '<%= profile.points %>' ,'<%= profile.status %>' , '<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')" <% if (customIndex <= 3) { %> class="gold" <% } %>>
+      <td><%= customIndex %></td>
+      <td><%= profile.name %></td>
+      <td><%= profile.points %></td>
+      <td>
+        <form action="/rating_for_admin/addPoints" method="POST" onclick="event.stopPropagation();"> <!-- Добавлен обработчик событий -->
+          <input type="hidden" name="profileId" value="<%= profile._id %>">
+          <input type="number" class="pointsToAdd" name="pointsToAdd" placeholder="Enter points">
+          <button type="submit">Add</button>
+        </form>
+      </td>
+    </tr>
+    <% customIndex++; %>
+  <% } %>
+<% }); %>
+
+        </tbody>
+    </table>
+</section>
+</div>
+<div class="container">
+    <section class="table-sec">
+        <h2 style="text-align: center;">Legends</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Position</th>
+                    <th>Name</th>
+                    <th>Points</th>
+                    <th>Add Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% let customIndex5 = 1; %>
+                <% profiles.forEach((profile) => { %>
+                    <% if (profile.status === 'legend') { %>
+                    <tr onclick="showDetailsAndAddAchievement('<%= profile._id %>', '<%= profile.name %>', '<%= profile.details %>', '<%= profile.points %>' ,'<%= profile.status %>' , '<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')" class="gold">
+                        <td><%= customIndex5 %></td>
+                        <td><%= profile.name %></td>
+                        <td><%= profile.points %></td>
+                        <td>
+                            <form action="/rating_for_admin/addPoints" method="POST">
+                                <input type="hidden" name="profileId" value="<%= profile._id %>">
+                                <input type="number" class="pointsToAdd" name="pointsToAdd" placeholder="Enter points">
+                                <button type="submit">Add</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <% customIndex5++; %>
+                    <% } %>
+                <% }); %>
+            </tbody>
+        </table>
+    </section>
+</div>
+<!-- Modal -->
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div id="modal-details"></div>
+
+        <!-- Form for adding achievement -->
+        <form action="/rating_for_admin/addUserAchievement" method="POST">
+            <input type="hidden" id="profileId" name="profileId">
+            <label for="achievementId">Achievement:</label>
+            <select name="achievementId" id="achievementId">
+                <% achievements.forEach(achievement => { %>
+                    <option value="<%= achievement._id %>"><%= achievement.achievement %></option>
+                <% }); %>
+            </select><br>
+            <button type="submit">Add Achievement</button>
+        </form>
+    </div>
+</div>
+
+<footer>
+    <div id="footer" class="container">
+        <p>© 2024 Apoyando</p>
+    </div>
+</footer>
+
+<script>
+   function showDetailsAndAddAchievement(profileId, name, details,points,status ,photo, achievements) {
+        var modal = document.getElementById("myModal");
+        var modalDetails = document.getElementById("modal-details");
+
+        if (modal && modalDetails) {
+            // Display modal
+            modal.style.display = "block";
+
+            // Set profileId value
+            document.getElementById("profileId").value = profileId;
+
+            // Parse achievements from JSON string to array of objects
+            var parsedAchievements = JSON.parse(achievements);
+
+            // Populate modal with details
+            modalDetails.innerHTML = "<h2>" + name + "</h2>" +
+        "<img src='/img/" + photo + "' alt='" + name + "' class='profile-img'>"+
+        "<p>" + details + "</p>" +
+        "<p>" + status + "</p>" +
+        "<p>" + points + "</p>";
+
+            // If there are achievements, add them to modal content
+            if (parsedAchievements.length > 0) {
+                var achievementsHTML = "<ul>";
+                parsedAchievements.forEach(function (achievement) {
+                    achievementsHTML += "<li data-tooltip='"+ achievement.achievement+ ". "+ achievement.description +".'>"+"<img src='/img/"+ achievement.photo +"' alt='achievement' class='achievement-img'>" +"</li>";
+                });
+                achievementsHTML += "</ul>";
+                modalDetails.innerHTML += achievementsHTML;
+            }
+        } else {
+            console.error('Modal or modal details element not found');
+        }
+    }
+
+    // Close modal function
+    function closeModal() {
+        var modal = document.getElementById("myModal");
+        modal.style.display = "none";
+    }
+    // Получаем текущий год
+    var currentYear = new Date().getFullYear();        
+    document.getElementById("year").innerHTML = "Rating "+currentYear;
+</script>
+
+
+</body>
+</html>

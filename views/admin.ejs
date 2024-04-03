@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="icon" href="img/icon.jpg"> 
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1 style="text-align: center;">Admin Panel</h1>
+    <div id="div-nav" class="container">
+        <a href="/"><img src="img/guitar.png" alt="guitar" class="logo" width="25px"></a> <!-- Adjusted image source -->
+        <nav class="navbar">
+            <ul class="ul-nav-left">
+                <li class="li-nav">
+                    <a class="main-page-link" href="/adminDauren1748"><img class="img-nav" src="img/home.png" alt="home"><span>Home</span></a>
+                </li>
+                <li class="li-nav">
+                    <a class="main-page-link" href="/rating_for_admin"><img class="img-nav" src="img/rating.png" alt="rating"><span>Rating</span></a>
+                </li>
+                <li class="li-nav">
+                    <a class="main-page-link" href="/profiles_for_admin"><img class="img-nav" src="img/user.png" alt="user"><span>Profiles</span></a>
+                </li>
+                <li class="li-nav">
+                    <a class="main-page-link" href="/achievements"><img class="img-nav" src="img/achiev.png" alt="achiev"><span>Achievement</span></a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <br>
+    <div class="container">
+        <section>
+            <h2> Форма для добавления нового профиля </h2>
+    <form action="/admin/addProfile" method="POST" enctype="multipart/form-data">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br>
+        <label for="details">Details:</label>
+        <input type="text" id="details" name="details" required><br>
+        <label for="points">Points:</label>
+        <input type="number" id="points" name="points" required><br>
+        <label for="status">Status:</label>
+        <select name="status" id="status">
+                <option value="active">active</option>
+                <option value="inactive">inactive</option>
+                <option value="legend">legend</option>
+        </select><br>
+        <label for="photo">Photo:</label>
+        <input type="file" id="photo" name="photo" required><br>
+        <button type="submit">Add Profile</button>
+    </form></section>
+<section>
+     <h2> Форма для удаления профиля </h2>
+     <form action="/admin/deleteProfile" method="POST">
+        <label for="deleteProfileId">Select Profile to Delete:</label>
+        <select name="profileId" id="deleteProfileId">
+            <% profiles.forEach(profile => { %>
+                <option value="<%= profile._id %>"><%= profile.name %></option>
+            <% }); %>
+        </select>
+        <button type="submit">Delete Profile</button>
+    </form>
+</section>
+<section>
+    <h2>  Форма для добавления нового достижения </h2>
+    <form action="/admin/addAchievement" method="POST" enctype="multipart/form-data">
+        <label for="achievement">Achievement:</label>
+        <input type="text" id="achievement" name="achievement" required><br>
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="description" required><br>
+        <label for="achievementPhoto">Photo:</label>
+        <input type="file" id="achievementPhoto" name="achievementPhoto" required><br>
+        <button type="submit">Add Achievement</button>
+    </form></section>
+    <section>
+        <h2>Форма для удаления достижения</h2>
+        <form action="/admin/deleteAchievement" method="POST">
+            <label for="deleteAchievementId">Select Achievement to Delete:</label>
+            <select name="achievementId" id="deleteAchievementId">
+                <% achievements.forEach(achievement => { %>
+                    <option value="<%= achievement._id %>"><%= achievement.achievement %></option>
+                <% }); %>
+            </select>
+            <button type="submit">Delete Achievement</button>
+        </form>
+    </section>
+<section>
+    <h2>  Форма для добавления достижения для существующего пользователя </h2>
+<form action="/admin/addUserAchievement" method="POST">
+    <label for="userId">User:</label>
+    <select name="userId" id="userId">
+        <% profiles.forEach(profile => { %>
+            <option value="<%= profile._id %>"><%= profile.name %></option>
+        <% }); %>
+    </select><br>
+    <label for="achievementId">Achievement:</label>
+    <select name="achievementId" id="achievementId">
+        <% achievements.forEach(achievement => { %>
+            <option value="<%= achievement._id %>"><%= achievement.achievement %></option>
+        <% }); %>
+    </select><br>
+    <button type="submit">Add Achievement</button>
+</section>
+</form>
+<section>
+    <h2> Форма для удаления достижения </h2>
+    <ul>
+        <% profiles.forEach(profile => { %>
+            <li>
+                <h3><%= profile.name %></h3>
+                
+                <form action="/admin/removeUserAchievement" method="POST">
+                    <input type="hidden" name="profileId" value="<%= profile._id %>">
+                    <label for="achievementId">Select achievement to remove:</label>
+                    <select name="achievementId" id="achievementId">
+                        <% profile.achievements.forEach(achievementId => { %>
+                            <% const achievement = achievements.find(a => a._id.equals(achievementId)); %>
+                            <% if (achievement) { %>
+                                <option value="<%= achievement._id %>"><%= achievement.achievement %></option>
+                            <% } %>
+                        <% }); %>
+                    </select>
+                    <button type="submit">Remove Achievement</button>
+                </form>
+            </li>
+        <% }); %>
+    </ul>
+</section>
+<section>
+    <h2>Для сброса баллов профилей со статусом "active"</h2>
+    <form action="/admin/resetPoints" method="POST">
+        <button type="submit">For Active Profiles</button>
+      </form>     
+      <h2>Для сброса баллов профилей со статусом "inactive"</h2>
+    <form action="/admin/resetPoints2" method="POST">
+        <button type="submit">For Inactive Profiles</button>
+      </form>    
+</section>
+<footer>
+    <div id="footer" class="container">
+        <p>© 2024 Apoyando</p>
+    </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Achievement</title>
+    <link rel="icon" href="img/icon.jpg"> 
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+    <h1>Achievement</h1>
+</header>
+<div id="div-nav" class="container">
+    <a href="/"><img src="img/guitar.png" alt="guitar" class="logo" width="25px"></a> <!-- Adjusted image source -->
+    <nav class="navbar">
+        <ul class="ul-nav-left">
+            <li class="li-nav">
+                <a class="main-page-link" href="/adminDauren1748"><img class="img-nav" src="img/home.png" alt="home"><span>Home</span></a>
+            </li>
+            <li class="li-nav">
+                <a class="main-page-link" href="/rating_for_admin"><img class="img-nav" src="img/rating.png" alt="rating"><span>Rating</span></a>
+            </li>
+            <li class="li-nav">
+                <a class="main-page-link" href="/profiles_for_admin"><img class="img-nav" src="img/user.png" alt="user"><span>Profiles</span></a>
+            </li>
+            <li class="li-nav">
+                <a class="main-page-link" href="/achievements"><img class="img-nav" src="img/achiev.png" alt="achiev"><span>Achievement</span></a>
+            </li>
+        </ul>
+    </nav>
+</div>
+<div class="container">
+    <section>
+    <form action="/add_achievements_to_profile" method="POST">
+        <label for="profile">Select Profile:</label>
+        <select name="profileId" id="profile">
+            <% profiles.forEach(profile => { %>
+                <option value="<%= profile._id %>"><%= profile.name %></option>
+            <% }); %>
+        </select>
+
+        <label>Choose Achievements:</label>
+        <% allAchievements.forEach(achievement => { %>
+            <div>
+                <input type="checkbox" name="selectedAchievements" value="<%= achievement._id %>">
+                <label><%= achievement.achievement %></label>
+            </div>
+        <% }); %>
+
+        <button type="submit">Add Achievements</button>
+    </form>
+</section>
+</div>
+</body>
+</html>
