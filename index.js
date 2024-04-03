@@ -7,7 +7,7 @@ const bodyParser = require('body-parser'); // Добавлено для обра
 const multer = require('multer'); 
 
 const app = express();
-const port = 3000;
+const PORT = 3000;
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true })); // Добавлено для обработки данных формы
@@ -48,6 +48,20 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+
+
+app.get('/', async (req, res) => {
+  try {
+    res.render('index');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 // Маршрут для отображения профилей
 app.get('/profiles', async(req,res)=>{
   try {
@@ -59,14 +73,7 @@ app.get('/profiles', async(req,res)=>{
   }
 });
 
-app.get('/', async (req, res) => {
-  try {
-    res.render('index');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Internal Server Error');
-  }
-});
+
 // Маршрут для отображения страницы достижений и добавления их к профилю
 app.get('/achievements', async (req, res) => {
   try {
@@ -398,6 +405,4 @@ app.post('/rating_for_admin/addUserAchievement', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+
