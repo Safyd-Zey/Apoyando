@@ -33,24 +33,25 @@
 </div>
 <div class="container">
     <section>
-    <form action="/add_achievements_to_profile" method="POST">
-        <label for="profile">Select Profile:</label>
-        <select name="profileId" id="profile">
-            <% profiles.forEach(profile => { %>
-                <option value="<%= profile._id %>"><%= profile.name %></option>
+        <form action="/add_achievements_to_profile" method="POST">
+            <label for="profile">Select Profile:</label>
+            <select name="profile" id="profile">
+                <% profiles.forEach(profile => { %>
+                    <option value="<%= profile._id %>"><%= profile.name %></option>
+                <% }); %>
+            </select>
+        
+            <label for="achievements">Select Achievements:</label>
+            <% achievements.forEach(achievement => { %>
+                <div>
+                    <input type="checkbox" id="<%= achievement._id %>" name="achievements" value="<%= achievement._id %>">
+                    <label for="<%= achievement._id %>"><%= achievement.achievement %></label>
+                </div>
             <% }); %>
-        </select>
-
-        <label>Choose Achievements:</label>
-        <% allAchievements.forEach(achievement => { %>
-            <div>
-                <input type="checkbox" name="selectedAchievements" value="<%= achievement._id %>">
-                <label><%= achievement.achievement %></label>
-            </div>
-        <% }); %>
-
-        <button type="submit">Add Achievements</button>
-    </form>
+        
+            <button type="submit">Assign Achievements</button>
+        </form>
+        
 </section>
 </div>
 </body>

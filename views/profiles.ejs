@@ -58,7 +58,7 @@
         <% profiles.forEach(profile => { %>
        <div class="profile-card" onclick="showDetails('<%= profile.name %>', '<%= profile.details %>', '<%= profile.points %>','<%= profile.status %>' , '<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')">
 
-            <img class="profile-img" src="/img/<%= profile.photo %>" alt="<%= profile.name %>">
+            <img class="profile-img" src="<%= profile.photo %>" alt="<%= profile.name %>">
             <p style="font-weight: bold;text-align: center;"><%= profile.name %></p>
         </div>
         <% }); %>
@@ -98,7 +98,7 @@
 
     // Populate modal with details
     modalDetails.innerHTML = "<h2>" + name + "</h2>" +
-        "<img src='/img/" + photo + "' alt='" + name + "' class='profile-img'>"+
+        "<img src='" + photo + "' alt='" + name + "' class='profile-img'>"+
         "<p>" + details + "</p>" +
         "<p>" + status + "</p>" +
         "<p>" + points + "</p>";
@@ -107,7 +107,7 @@
     if (parsedAchievements.length > 0) {
         var achievementsHTML = "<ul>";
         parsedAchievements.forEach(function(achievement) {
-            achievementsHTML += "<li data-tooltip='"+ achievement.achievement+ ". "+ achievement.description +".'>"+"<img src='/img/"+ achievement.photo +"' alt='achievement' class='achievement-img'>" +"</li>";
+            achievementsHTML += "<li data-tooltip='"+ achievement.achievement+ ". "+ achievement.description +".'>"+"<img src='"+ achievement.photo +"' alt='achievement' class='achievement-img'>" +"</li>";
         });
         achievementsHTML += "</ul>";
         modalDetails.innerHTML += achievementsHTML;

@@ -5,9 +5,16 @@ const mongoose = require('mongoose');
 const ejs = require('ejs');
 const bodyParser = require('body-parser'); // Добавлено для обработки данных формы
 const multer = require('multer'); 
+const cloudinary = require('cloudinary').v2;
 
 const app = express();
-const PORT = 3000;
+const port = 3000;
+
+cloudinary.config({ 
+  cloud_name: 'dm1fkeon6', 
+  api_key: '753529946954764', 
+  api_secret: 'kx_B3FMK1CyDwvB4JBaXJtCLjFc' 
+});
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true })); // Добавлено для обработки данных формы
@@ -38,29 +45,7 @@ const achievementSchema = new mongoose.Schema({
 const Achievement = mongoose.model('Achievement', achievementSchema);
 
 // Указываем директорию для хранения загруженных файлов
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-      cb(null, 'public/img'); // Сохраняем в папке 'public/img'
-  },
-  filename: function (req, file, cb) {
-      cb(null, Date.now() + '-' + file.originalname); // Уникальное имя файла
-  }
-});
-const upload = multer({ storage: storage });
-
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
-
-
-app.get('/', async (req, res) => {
-  try {
-    res.render('index');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Internal Server Error');
-  }
-});
+const storage = multer.diskStorage({});
 
 // Маршрут для отображения профилей
 app.get('/profiles', async(req,res)=>{
@@ -73,40 +58,52 @@ app.get('/profiles', async(req,res)=>{
   }
 });
 
-
-// Маршрут для отображения страницы достижений и добавления их к профилю
-app.get('/achievements', async (req, res) => {
+app.get('/', async (req, res) => {
   try {
-    // Получите все доступные достижения
-    const allAchievements = await Achievement.find();
-
-    // Получите профиль для заполнения селектора
-    const profiles = await Profile.find();
-
-    res.render('achievements', { allAchievements, profiles });
+    res.render('index');
   } catch (err) {
     console.error(err);
     res.status(500).send('Internal Server Error');
   }
 });
+// Маршрут для отображения страницы достижений и добавления их к профилю
+app.get('/achievements', async (req, res) => {
+  try {
+    const profiles = await Profile.find();
+    const achievements = await Achievement.find();
+    res.render('achievements', { profiles, achievements });
+} catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+}
+});
 
 // Маршрут для добавления выбранных достижений к профилю
 app.post('/add_achievements_to_profile', async (req, res) => {
   try {
-    const { profileId, selectedAchievements } = req.body;
+    const { profile, achievements } = req.body;
 
-    // Найдите профиль по ID
-    const profile = await Profile.findById(profileId);
+    // Найдите профиль по идентификатору
+    const userProfile = await Profile.findById(profile);
 
-    if (!profile) {
-      return res.status(404).send('Profile not found');
+    if (!userProfile) {
+        return res.status(404).send('User not found');
     }
 
-    // Добавьте выбранные достижения к профилю
-    profile.achievements.push(...selectedAchievements);
+    // Проверяем, является ли achievements массивом
+    const achievementsArray = Array.isArray(achievements) ? achievements : [achievements];
 
-    // Сохраните профиль
-    await profile.save();
+    // Добавьте выбранные достижения к профилю
+    for (const achievementId of achievementsArray) {
+        const achievement = await Achievement.findById(achievementId);
+        if (achievement) {
+            userProfile.achievements.push(achievement);
+        }
+    }
+
+
+    // Сохраните обновленный профиль
+    await userProfile.save();
 
     res.redirect('/achievements');
   } catch (err) {
@@ -114,6 +111,7 @@ app.post('/add_achievements_to_profile', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
 
 
 
@@ -129,35 +127,41 @@ app.get('/adminDauren1748', async (req, res) => {
   }
 });
 
+const upload = multer({ storage: storage });
 
-
-// Маршрут для добавления новых данных пользователей, включая обработку файла
+// Измененный маршрут для добавления нового пользователя с загрузкой фото в Cloudinary
 app.post('/admin/addProfile', upload.single('photo'), async (req, res) => {
   try {
-      const { name, details, points, status, achievements } = req.body;
-      const photo = req.file.filename; // Получаем название файла
+    const { name, details, points, status} = req.body;
 
-      // Преобразуем массив идентификаторов достижений в объекты mongoose
-      const achievementObjects = await Achievement.find({ _id: { $in: achievements } });
+    // Загрузка изображения в Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path);
 
-      // Создаем новый профиль
-      const newProfile = new Profile({ name, details, photo,points, status, achievements: achievementObjects });
+    // Создание нового профиля с URL-адресом фото из Cloudinary
+    const newProfile = new Profile({ 
+      name, 
+      details, 
+      photo: result.secure_url, // Используем URL-адрес изображения из Cloudinary
+      points, 
+      status
+    });
 
-      // Сохраняем новый профиль
-      await newProfile.save();
+    // Сохраняем новый профиль
+    await newProfile.save();
 
-      res.redirect('/adminDauren1748');
+    res.redirect('/adminDauren1748');
   } catch (err) {
-      console.error(err);
-      res.status(500).send('Internal Server Error');
+    console.error(err);
+    res.status(500).send('Internal Server Error');
   }
 });
 // Маршрут для добавления новых достижений
 app.post('/admin/addAchievement', upload.single('achievementPhoto'), async (req, res) => {
   try {
       const { achievement, description } = req.body;
-      const photo = req.file.filename; // Получаем название файла
-      const newAchievement = new Achievement({ achievement, description, photo });
+      // Загрузка изображения в Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path);
+      const newAchievement = new Achievement({ achievement, description, photo: result.secure_url });
       await newAchievement.save();
       res.redirect('/adminDauren1748');
   } catch (err) {
@@ -405,4 +409,6 @@ app.post('/rating_for_admin/addUserAchievement', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
