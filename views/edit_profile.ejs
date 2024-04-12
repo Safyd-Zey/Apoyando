@@ -1,0 +1,27 @@
+<!-- edit_profile.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<h1 style="text-align: center;">Edit Profile</h1>
+<div class="container"><section>
+<form action="/edit_profile/<%= profile._id %>" method="POST" enctype="multipart/form-data">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" value="<%= profile.name %>"><br>
+    <label for="details">Details:</label>
+    <textarea id="details" name="details"><%= profile.details %></textarea><br>
+    <label for="photo">Photo:</label>
+    <input type="file" id="photo" name="photo"><br>
+    <img src="<%= profile.photo %>" alt="<%= profile.name %>" width="100"><br>
+    <button type="submit">Save</button>
+</form>
+</section></div>
+</body>
+</html>

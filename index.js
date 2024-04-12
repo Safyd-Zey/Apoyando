@@ -255,6 +255,18 @@ app.post('/admin/removeUserAchievement', async (req, res) => {
       res.status(500).send('Internal Server Error');
   }
 });
+
+// Маршрут для перехода на страницу редактирования профиля
+app.get('/edit_profile', async (req, res) => {
+  try {
+    const profileId = req.query.profile;
+    res.redirect(`/edit_profile/${profileId}`);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 app.post('/admin/resetPoints', async (req, res) => {
   try {
     // Находим все профили со статусом "active"
@@ -409,6 +421,42 @@ app.post('/rating_for_admin/addUserAchievement', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+// Маршрут для отображения страницы редактирования профиля
+app.get('/edit_profile/:profileId', async (req, res) => {
+  try {
+    const profileId = req.params.profileId;
+    const profile = await Profile.findById(profileId);
+    if (!profile) {
+      return res.status(404).send('Profile not found');
+    }
+    res.render('edit_profile', { profile });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// Маршрут для обновления данных профиля
+app.post('/edit_profile/:profileId', upload.single('photo'), async (req, res) => {
+  try {
+    const profileId = req.params.profileId;
+    const { name, details } = req.body;
+    let photoUrl = req.body.currentPhotoUrl; // Изменение по умолчанию
+    if (req.file) {
+    // Загрузка изображения в Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path);
+      photoUrl = result.secure_url;
+    }
+    // Обновление данных профиля
+    await Profile.findByIdAndUpdate(profileId, { name, details, photo: photoUrl });
+    res.redirect('/adminDauren1748');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

@@ -100,8 +100,21 @@
         <% }); %>
     </select><br>
     <button type="submit">Add Achievement</button>
-</section>
 </form>
+</section>
+
+<section>
+    <h2>Редактирования профиля</h2>
+<form action="/edit_profile" method="GET">
+    <label for="profile">Select Profile:</label>
+    <select name="profile" id="profile">
+        <% profiles.forEach(profile => { %>
+            <option value="<%= profile._id %>"><%= profile.name %></option>
+        <% }); %>
+    </select>
+    <button type="submit">Edit Profile</button>
+</form>
+</section>
 <section>
     <h2> Форма для удаления достижения </h2>
     <ul>
@@ -126,6 +139,7 @@
         <% }); %>
     </ul>
 </section>
+
 <section>
     <h2>Для сброса баллов профилей со статусом "active"</h2>
     <form action="/admin/resetPoints" method="POST">
