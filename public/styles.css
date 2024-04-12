@@ -337,7 +337,7 @@ tbody tr:last-child td:first-child { border-bottom-left-radius: 10px; }
 tbody tr:last-child td:last-child { border-bottom-right-radius: 10px; }
 
 th, td {
-    padding: 15px 5px;
+    padding: 7px 5px;
     text-align: left;
     border: 1px solid #ffffff;
     
@@ -360,13 +360,28 @@ th:nth-child(4) {
     width: 20%;
 }
 tbody tr:hover {
-    background-color:#e2e0e0;
+    background-color:#04d9ff;
 }
 .pointsToAdd{
     width: 75px;
 }
 .gold {
     background-color: gold;
+}
+.red{
+    background-color: #EA4335; 
+}
+.green{
+    background-color: rgba(0, 255, 115, 2.997);
+}
+.blue{
+    background-color: #46BDC9;
+}
+.gray{
+    background-color: #D9EAD3;
+}
+.other{
+    background-color: #D9D9D9;
 }
 
 /*Для всплывающих подсказок*/

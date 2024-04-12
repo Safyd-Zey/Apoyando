@@ -47,7 +47,7 @@
             <% let customIndex = 1; %>
 <% profiles.forEach((profile) => { %>
   <% if (profile.status === 'active') { %>
-    <tr onclick="showDetailsAndAddAchievement('<%= profile._id %>', '<%= profile.name %>', '<%= profile.details %>', '<%= profile.points %>' ,'<%= profile.status %>' , '<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')" <% if (customIndex <= 3) { %> class="gold" <% } %>>
+    <tr onclick="showDetailsAndAddAchievement('<%= profile._id %>', '<%= profile.name %>', '<%= profile.details %>', '<%= profile.points %>' ,'<%= profile.status %>' , '<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')" <% if (customIndex == 1 ) { %> class="gold" <% } else if (customIndex == 2) { %> class="red"  <% } else if (customIndex == 3 ) { %> class="green"  <% } else if (customIndex > 3 && customIndex <= 10 ) { %> class="blue" <% } else if (customIndex > 10 && customIndex <= 20 ) { %> class="gray"  <% } else if (customIndex > 20 ) { %> class="other"  <% } %>>
       <td><%= customIndex %></td>
       <td><%= profile.name %></td>
       <td><%= profile.points %></td>
@@ -88,7 +88,7 @@
                         <td><%= profile.name %></td>
                         <td><%= profile.points %></td>
                         <td>
-                            <form action="/rating_for_admin/addPoints" method="POST">
+                            <form action="/rating_for_admin/addPoints" method="POST" onclick="event.stopPropagation();">
                                 <input type="hidden" name="profileId" value="<%= profile._id %>">
                                 <input type="number" class="pointsToAdd" name="pointsToAdd" placeholder="Enter points">
                                 <button type="submit">Add</button>
