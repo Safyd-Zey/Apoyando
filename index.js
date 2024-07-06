@@ -421,6 +421,26 @@ app.post('/rating_for_admin/addUserAchievement', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+app.post('/rating_for_admin/updatePoints', async (req, res) => {
+  try {
+    const { profiles } = req.body;
+
+    await Promise.all(profiles.map(async (profile) => {
+      const { profileId, pointsToAdd } = profile;
+      const existingProfile = await Profile.findById(profileId);
+      if (existingProfile) {
+        existingProfile.points += parseInt(pointsToAdd);
+        await existingProfile.save();
+      }
+    }));
+
+    res.redirect('/rating_for_admin');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 // Маршрут для отображения страницы редактирования профиля
 app.get('/edit_profile/:profileId', async (req, res) => {
   try {
