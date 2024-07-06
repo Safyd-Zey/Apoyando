@@ -422,24 +422,28 @@ app.post('/rating_for_admin/addUserAchievement', async (req, res) => {
   }
 });
 app.post('/rating_for_admin/updatePoints', async (req, res) => {
-  try {
-    const { profiles } = req.body;
+    try {
+        const profiles = req.body.profiles;
+        if (!profiles) {
+            throw new Error("No profiles data received.");
+        }
 
-    await Promise.all(profiles.map(async (profile) => {
-      const { profileId, pointsToAdd } = profile;
-      const existingProfile = await Profile.findById(profileId);
-      if (existingProfile) {
-        existingProfile.points += parseInt(pointsToAdd);
-        await existingProfile.save();
-      }
-    }));
+        for (const profileData of Object.values(profiles)) {
+            const { profileId, pointsToAdd } = profileData;
+            const points = parseFloat(pointsToAdd) || 0;
 
-    res.redirect('/rating_for_admin');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Internal Server Error');
-  }
+            await Profile.findByIdAndUpdate(profileId, {
+                $inc: { points: points }
+            });
+        }
+
+        res.redirect('/rating_for_admin');
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error updating points.');
+    }
 });
+
 
 // Маршрут для отображения страницы редактирования профиля
 app.get('/edit_profile/:profileId', async (req, res) => {
