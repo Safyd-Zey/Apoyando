@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groups</title>
+    <link rel="icon" href="img/icon.jpg"> <!-- Adjusted icon source -->
+    <link rel="stylesheet" href="styles.css">
+    
+</head>
+<body>
+    <header>
+        <h1>Группы</h1>
+    </header>
+    
+    <div id="div-nav" class="container">
+        <a href="/"><img src="img/guitar.png" alt="guitar" class="logo" width="25px"></a> <!-- Adjusted image source -->
+        <nav class="navbar">
+            <ul class="ul-nav-left">
+                <li class="li-nav" id="menu">
+                    <div class="dropdown">
+                        <a class="main-page-link">
+                            <img class="img-nav" src="img/menu-burger.png" style="vertical-align: bottom;"><span>Menu</span></a> <!-- Adjusted image source -->
+                        <div class="dropdown-content">
+                            <a class="main-page-link" href="/">
+                                <img class="img-nav" src="img/home.png" alt="home"><span>Home</span>
+                            </a>
+                            <a class="main-page-link" href="/rating">
+                                <img class="img-nav" src="img/rating.png" alt="rating"><span>Rating</span>
+                            </a>
+                            <a class="main-page-link" href="/profiles">
+                                <img class="img-nav" src="img/user.png" alt="user"><span>Profiles</span>
+                            </a>
+                            <a class="main-page-link" href="/groups">
+                                <img class="img-nav" src="img/group.png" alt="groups"><span>Groups</span>
+                            </a>
+                        </div>
+                    </div>
+                </li>
+                <li class="li-nav">
+                    <a class="main-page-link" href="/">
+                        <img class="img-nav" src="img/home.png" alt="home"><span>Home</span>
+                    </a>
+                </li>
+                <li class="li-nav">
+                    <a class="main-page-link" href="/rating">
+                        <img class="img-nav" src="img/rating.png" alt="rating"><span>Rating</span>
+                    </a>
+                </li>
+                <li class="li-nav">
+                    <a class="main-page-link" href="/profiles">
+                        <img class="img-nav" src="img/user.png" alt="user"><span>Profiles</span>
+                    </a>
+                </li>
+                <li class="li-nav">
+                    <a class="main-page-link" href="/groups">
+                        <img class="img-nav" src="img/group.png" alt="groups"><span>Groups</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <div class="container">
+      <br>
+      <div>
+        <% if (groups.length > 0) { %>
+          <% groups.forEach(group => { %>
+            <div class="group" style="border: 5px solid <%= group.color %>; margin-bottom: 20px; border-radius: 8px; padding: 10px; background-color: white;">
+              <div class="group-details" onclick="toggleAccordion(this)">
+                <img src="<%= group.image %>" alt="Group Image" class="group-image" />
+                <div class="group-info">
+                  <h3 class="group-name"><%= group.name %></h3>
+                  <p>Общий балл участников: <strong><%= group.totalPoints %></strong></p>
+                </div>
+              </div>
+    
+              <div class="accordion-content">
+                <div class="cards">
+                  <% group.members.forEach(member => { %>
+                    <div class="profile-card" onclick="showDetails('<%= member.name %>', '<%= member.details %>', '<%= member.points %>', '<%= member.status %>', '<%= member.photo %>', '<%= JSON.stringify(member.achievements) %>')">
+                      <img class="profile-img" src="<%= member.photo %>" alt="<%= member.name %>">
+                      <p style="font-weight: bold; text-align: center;"><%= member.name %></p>
+                    </div>
+                  <% }); %>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <p>Группы пока не созданы.</p>
+        <% } %>
+      </div>
+    
+
+    <!-- Modal -->
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div id="modal-details"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Функция для отображения деталей участника
+    function showDetails(name, details, points, status, photo, achievements) {
+      const modal = document.getElementById("myModal");
+      const modalDetails = document.getElementById("modal-details");
+
+      modal.style.display = "block";
+
+      const parsedAchievements = JSON.parse(achievements);
+
+      modalDetails.innerHTML = `
+        <h2>${name}</h2>
+        <img src="${photo}" alt="${name}" class="profile-img">
+        <p>Описание: ${details}</p>
+        <p>Статус: ${status}</p>
+        <p>Баллы: ${points}</p>
+      `;
+
+      if (parsedAchievements.length > 0) {
+        let achievementsHTML = "<ul>";
+        parsedAchievements.forEach(achievement => {
+          achievementsHTML += `
+            <li data-tooltip="${achievement.achievement}. ${achievement.description}.">
+              <img src="${achievement.photo}" alt="Achievement" class="achievement-img">
+            </li>
+          `;
+        });
+        achievementsHTML += "</ul>";
+        modalDetails.innerHTML += achievementsHTML;
+      }
+    }
+
+    // Закрыть модальное окно
+    function closeModal() {
+      document.getElementById("myModal").style.display = "none";
+    }
+
+    function toggleAccordion(element) {
+  const content = element.nextElementSibling;
+
+  // Скрываем или показываем контент
+  if (content.style.display === "block") {
+    content.style.display = "none";
+  } else {
+    content.style.display = "block";
+  }
+}
+
+
+  </script>
+</body>
+</html>

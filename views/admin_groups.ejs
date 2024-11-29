@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Groups</title>
+        <link rel="icon" href="img/icon.jpg"> 
+        <link rel="stylesheet" href="styles.css">
+    </head>
+<body>
+    <header>
+        <h1>Groups</h1>
+    </header>
+    <div id="div-nav" class="container">
+        <a href="/admin_images"><img src="img/guitar.png" alt="guitar" class="logo" width="25px"></a> <!-- Adjusted image source -->
+        <nav class="navbar">
+            <ul class="ul-nav-left">
+                <li class="li-nav">
+                    <a class="main-page-link" href="/adminDauren1748"><img class="img-nav" src="img/home.png" alt="home"><span>Home</span></a>
+                </li>
+                <li class="li-nav">
+                    <a class="main-page-link" href="/rating_for_admin"><img class="img-nav" src="img/rating.png" alt="rating"><span>Rating</span></a>
+                </li>
+                <li class="li-nav">
+                    <a class="main-page-link" href="/profiles_for_admin"><img class="img-nav" src="img/user.png" alt="user"><span>Profiles</span></a>
+                </li>
+                <li class="li-nav">
+                    <a class="main-page-link" href="/achievements"><img class="img-nav" src="img/achiev.png" alt="achiev"><span>Achievement</span></a>
+                </li>
+                <li class="li-nav">
+                    <a class="main-page-link" href="/admin_groups">
+                        <img class="img-nav" src="img/group.png" alt="groups"><span>Groups</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+  <div class="container">
+    <section>
+      <h2>Создать новую группу</h2>
+      <form action="/admin_groups/create" method="POST" enctype="multipart/form-data">
+        <label for="name">Название группы:</label>
+        <input type="text" id="name" name="name" required />
+        <br>
+        <label for="color">Цвет группы:</label>
+        <input type="color" id="color" name="color" required />
+<br>
+        <label for="image">Картинка группы:</label>
+        <input type="file" id="image" name="image" required />
+<br>
+        <label>Выберите участников:</label>
+        <div class="members-list">
+          <% profiles.forEach(profile => { %>
+            <% if (profile.status === 'active') { %> <!-- Проверяем статус -->
+              <div>
+                <input type="checkbox" id="profile_<%= profile._id %>" name="members" value="<%= profile._id %>" />
+                <label for="profile_<%= profile._id %>">
+                  <%= profile.name %> — <%= profile.points %> баллов
+                </label>
+              </div>
+            <% } %>
+          <% }); %>
+        </div>
+        
+
+        <button type="submit">Создать группу</button>
+      </form>
+    </section>
+
+    <!-- Список существующих групп -->
+    <section>
+      <h2>Существующие группы</h2>
+      <% if (groups.length > 0) { %>
+        <% groups.forEach(group => { %>
+            <div class="group" style="border: 5px solid <%= group.color %>; margin-bottom: 20px; border-radius: 8px; padding: 10px;">
+            <div class="group-details">
+                <img src="<%= group.image %>" alt="Group Image" class="group-image" />
+                <div class="group-info">
+                  <h3 class="group-name"><%= group.name %></h3>
+                  <p>Цвет: <span class="group-color" style="color: <%= group.color %>;"><%= group.color %></span></p>
+                  <p>Общий балл участников: <strong><%= group.totalPoints %></strong></p>
+                </div>
+              </div>
+              
+              
+            <h4>Участники:</h4>
+            <div class="cards">
+              <% group.members.forEach(member => { %>
+                <div class="profile-card" onclick="showDetails('<%= member.name %>', '<%= member.details %>', '<%= member.points %>','<%= member.status %>' , '<%= member.photo %>', '<%= JSON.stringify(member.achievements) %>')">
+
+                    <img class="profile-img" src="<%= member.photo %>" alt="<%= member.name %>">
+                    <p style="font-weight: bold;text-align: center;"><%= member.name %></p>
+                </div>
+              <% }); %>
+            </div>
+              <!-- Modal -->
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div id="modal-details"></div>
+    </div>
+</div>
+
+            <!-- Кнопка для удаления группы -->
+            <form action="/admin_groups/delete" method="POST" style="margin-top: 10px;">
+              <input type="hidden" name="groupId" value="<%= group._id %>" />
+              <button type="submit">Удалить группу</button>
+            </form>
+
+            <!-- Кнопка для редактирования группы -->
+            <button onclick="showEditForm('<%= group._id %>')">Редактировать группу</button>
+
+            <!-- Форма для редактирования группы (скрытая по умолчанию) -->
+            <div id="editForm_<%= group._id %>" style="display: none; margin-top: 10px;">
+              <form action="/admin_groups/edit/<%= group._id %>" method="POST" enctype="multipart/form-data">
+                <label for="name_<%= group._id %>">Название группы:</label>
+                <input type="text" id="name_<%= group._id %>" name="name" value="<%= group.name %>" required />
+                <br>
+                <label for="color_<%= group._id %>">Цвет группы:</label>
+                <input type="color" id="color_<%= group._id %>" name="color" value="<%= group.color %>" required />
+                <br>
+                <label for="image_<%= group._id %>">Картинка группы:</label>
+                <input type="file" id="image_<%= group._id %>" name="image" />
+                <input type="hidden" name="currentImageUrl" value="<%= group.image %>" />
+                <br>
+                <label>Выберите участников:</label>
+                <div class="members-list">
+                  <% profiles.forEach(profile => { %>
+                    <% if (profile.status === 'active') { %>
+                    <div>
+                      <input 
+                        type="checkbox" 
+                        id="edit_profile_<%= group._id %>_<%= profile._id %>" 
+                        name="members" 
+                        value="<%= profile._id %>" 
+                        <%= group.members.some(member => member._id.toString() === profile._id.toString()) ? 'checked' : '' %> 
+                      />
+                      <label for="edit_profile_<%= group._id %>_<%= profile._id %>">
+                        <%= profile.name %> — <%= profile.points %> баллов
+                      </label>
+                    </div>
+                    <% } %>
+                  <% }); %>
+                </div>
+
+                <button type="submit">Сохранить изменения</button>
+              </form>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <p>Группы пока не созданы.</p>
+      <% } %>
+    </section>
+  </div>
+  <footer>
+    <div id="footer" class="container">
+        <p>© 2024 Apoyando</p>
+    </div>
+</footer>
+  <script>
+    // Показываем форму редактирования
+    function showEditForm(groupId) {
+      const form = document.getElementById(`editForm_${groupId}`);
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+     // JavaScript function to show details in modal
+    function showDetails(name, details,points,status, photo, achievements) {
+    var modal = document.getElementById("myModal");
+    var modalDetails = document.getElementById("modal-details");
+
+    // Display modal
+    modal.style.display = "block";
+
+    // Parse achievements from JSON string to array of objects
+    var parsedAchievements = JSON.parse(achievements);
+
+    // Populate modal with details
+    modalDetails.innerHTML = "<h2>" + name + "</h2>" +
+        "<img src='" + photo + "' alt='" + name + "' class='profile-img'>"+
+        "<p>" + details + "</p>" +
+        "<p>" + status + "</p>" +
+        "<p>" + points + "</p>";
+
+    // If there are achievements, add them to modal content
+    if (parsedAchievements.length > 0) {
+        var achievementsHTML = "<ul>";
+        parsedAchievements.forEach(function(achievement) {
+            achievementsHTML += "<li data-tooltip='"+ achievement.achievement+ ". "+ achievement.description +".'>"+"<img src='"+ achievement.photo +"' alt='achievement' class='achievement-img'>" +"</li>";
+        });
+        achievementsHTML += "</ul>";
+        modalDetails.innerHTML += achievementsHTML;
+    }
+}
+
+
+    // Close modal function
+    function closeModal() {
+        var modal = document.getElementById("myModal");
+        modal.style.display = "none";
+    }
+  </script>
+</body>
+</html>

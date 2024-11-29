@@ -1,4 +1,4 @@
-// app.js
+// index.js
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -6,6 +6,8 @@ const ejs = require('ejs');
 const bodyParser = require('body-parser'); // Добавлено для обработки данных формы
 const multer = require('multer'); 
 const cloudinary = require('cloudinary').v2;
+const session = require('express-session');
+const flash = require('connect-flash');
 
 const app = express();
 const port = 3000;
@@ -15,7 +17,26 @@ cloudinary.config({
   api_key: '753529946954764', 
   api_secret: 'kx_B3FMK1CyDwvB4JBaXJtCLjFc' 
 });
+// Настройка сессий
+app.use(
+  session({
+    secret: 'ваш_секретный_ключ',
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
+// Настройка флэш-сообщений
+app.use(flash());
+
+
+
+// Middleware для передачи флэш-сообщений в шаблоны
+app.use((req, res, next) => {
+  res.locals.success = req.flash('success');
+  res.locals.error = req.flash('error');
+  next();
+});
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true })); // Добавлено для обработки данных формы
 app.set('view engine', 'ejs');
@@ -31,6 +52,7 @@ mongoose.connect('mongodb+srv://sayzey74:Dauren123Shambul@cluster0.pg4fvmr.mongo
     photo: String,
     status: String,
     points: { type: Number, default: 0 }, // Добавлено поле для количества баллов
+    cumulativePoints: { type: Number, default: 0 },
     achievements: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Achievement' }] // Ссылка на достижения
 });
 
@@ -44,8 +66,56 @@ const achievementSchema = new mongoose.Schema({
 
 const Achievement = mongoose.model('Achievement', achievementSchema);
 
+const groupSchema = new mongoose.Schema({
+  name: String,
+  image: String,
+  color: String, // HEX-код цвета
+  members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }] // Ссылки на участников
+});
+
+const Group = mongoose.model('Group', groupSchema);
+
+const imageSchema = new mongoose.Schema({
+  url: String,
+  description: String,
+});
+
+const Image = mongoose.model('Image', imageSchema);
 // Указываем директорию для хранения загруженных файлов
 const storage = multer.diskStorage({});
+const upload = multer({ storage: storage });
+
+
+
+
+// Страница входа
+app.get('/login', (req, res) => {
+  res.render('login'); // Создайте шаблон login.ejs или pug
+});
+
+// Обработка входа
+app.post('/login', (req, res) => {
+  const { password } = req.body;
+  const validPassword = 'ilovesayat';
+
+  if (password === validPassword) {
+    req.session.isAuthenticated = true;
+    req.flash('success', 'Вы успешно вошли!');
+    res.redirect('/adminDauren1748');
+  } else {
+    req.flash('error', 'Неверный пароль!');
+    res.redirect('/login');
+  }
+});
+
+function isAuthenticated(req, res, next) {
+  if (req.session.isAuthenticated) {
+    return next();
+  }
+  req.flash('error', 'Пожалуйста, войдите для доступа к этой странице.');
+  res.redirect('/login');
+}
+
 
 // Маршрут для отображения профилей
 app.get('/profiles', async(req,res)=>{
@@ -60,14 +130,64 @@ app.get('/profiles', async(req,res)=>{
 
 app.get('/', async (req, res) => {
   try {
-    res.render('index');
+    const images = await Image.find();
+    res.render('index', { images });
   } catch (err) {
     console.error(err);
     res.status(500).send('Internal Server Error');
   }
 });
+
+app.get('/admin_images', isAuthenticated, async (req, res) => {
+  try {
+    const images = await Image.find();
+    res.render('admin_images', { images });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// Маршрут для добавления нового изображения
+app.post('/admin_images/add', isAuthenticated, upload.single('image'), async (req, res) => {
+  try {
+    const { description } = req.body;
+
+    // Загрузка изображения в Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path);
+
+    // Сохранение изображения в базе данных
+    const newImage = new Image({ url: result.secure_url, description });
+    await newImage.save();
+
+    req.flash('success', 'Изображение успешно добавлено!');
+    res.redirect('/admin_images');
+  } catch (err) {
+    console.error(err);
+    req.flash('error', 'Ошибка при добавлении изображения!');
+    res.redirect('/admin_images');
+  }
+});
+
+app.post('/admin_images/delete/:id', isAuthenticated, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Удаление из базы данных
+    await Image.findByIdAndDelete(id);
+
+    req.flash('success', 'Изображение успешно удалено!');
+    res.redirect('/admin_images');
+  } catch (err) {
+    console.error(err);
+    req.flash('error', 'Ошибка при удалении изображения!');
+    res.redirect('/admin_images');
+  }
+});
+
+
 // Маршрут для отображения страницы достижений и добавления их к профилю
-app.get('/achievements', async (req, res) => {
+app.get('/achievements',isAuthenticated, async (req, res) => {
   try {
     const profiles = await Profile.find();
     const achievements = await Achievement.find();
@@ -79,7 +199,7 @@ app.get('/achievements', async (req, res) => {
 });
 
 // Маршрут для добавления выбранных достижений к профилю
-app.post('/add_achievements_to_profile', async (req, res) => {
+app.post('/add_achievements_to_profile',isAuthenticated, async (req, res) => {
   try {
     const { profile, achievements } = req.body;
 
@@ -116,7 +236,7 @@ app.post('/add_achievements_to_profile', async (req, res) => {
 
 
 // Маршрут для администраторской панели
-app.get('/adminDauren1748', async (req, res) => {
+app.get('/adminDauren1748', isAuthenticated, async (req, res) => {
   try {
       const profiles = await Profile.find();
       const achievements = await Achievement.find();
@@ -127,12 +247,13 @@ app.get('/adminDauren1748', async (req, res) => {
   }
 });
 
-const upload = multer({ storage: storage });
+
 
 // Измененный маршрут для добавления нового пользователя с загрузкой фото в Cloudinary
-app.post('/admin/addProfile', upload.single('photo'), async (req, res) => {
+app.post('/admin/addProfile',isAuthenticated, upload.single('photo'), async (req, res) => {
   try {
     const { name, details, points, status} = req.body;
+    const cumulativePoints = points;
 
     // Загрузка изображения в Cloudinary
     const result = await cloudinary.uploader.upload(req.file.path);
@@ -143,6 +264,7 @@ app.post('/admin/addProfile', upload.single('photo'), async (req, res) => {
       details, 
       photo: result.secure_url, // Используем URL-адрес изображения из Cloudinary
       points, 
+      cumulativePoints,
       status
     });
 
@@ -156,7 +278,7 @@ app.post('/admin/addProfile', upload.single('photo'), async (req, res) => {
   }
 });
 // Маршрут для добавления новых достижений
-app.post('/admin/addAchievement', upload.single('achievementPhoto'), async (req, res) => {
+app.post('/admin/addAchievement',isAuthenticated, upload.single('achievementPhoto'), async (req, res) => {
   try {
       const { achievement, description } = req.body;
       // Загрузка изображения в Cloudinary
@@ -171,7 +293,7 @@ app.post('/admin/addAchievement', upload.single('achievementPhoto'), async (req,
 });
 
 // Маршрут для добавления достижения для существующего пользователя
-app.post('/admin/addUserAchievement', async (req, res) => {
+app.post('/admin/addUserAchievement',isAuthenticated, async (req, res) => {
   try {
       const { userId, achievementId } = req.body;
 
@@ -202,7 +324,7 @@ app.post('/admin/addUserAchievement', async (req, res) => {
   }
 });
 // Удаление профиля
-app.post('/admin/deleteProfile', async (req, res) => {
+app.post('/admin/deleteProfile',isAuthenticated, async (req, res) => {
   try {
     const { profileId } = req.body;
 
@@ -217,7 +339,7 @@ app.post('/admin/deleteProfile', async (req, res) => {
 });
 
 // Удаление достижения
-app.post('/admin/deleteAchievement', async (req, res) => {
+app.post('/admin/deleteAchievement',isAuthenticated, async (req, res) => {
   try {
     const { achievementId } = req.body;
 
@@ -232,7 +354,7 @@ app.post('/admin/deleteAchievement', async (req, res) => {
 });
 
 // Маршрут для удаления достижения у существующего пользователя
-app.post('/admin/removeUserAchievement', async (req, res) => {
+app.post('/admin/removeUserAchievement',isAuthenticated, async (req, res) => {
   try {
       const { profileId, achievementId } = req.body;
 
@@ -257,7 +379,7 @@ app.post('/admin/removeUserAchievement', async (req, res) => {
 });
 
 // Маршрут для перехода на страницу редактирования профиля
-app.get('/edit_profile', async (req, res) => {
+app.get('/edit_profile',isAuthenticated, async (req, res) => {
   try {
     const profileId = req.query.profile;
     res.redirect(`/edit_profile/${profileId}`);
@@ -267,7 +389,7 @@ app.get('/edit_profile', async (req, res) => {
   }
 });
 
-app.post('/admin/resetPoints', async (req, res) => {
+app.post('/admin/resetPoints',isAuthenticated, async (req, res) => {
   try {
     // Находим все профили со статусом "active"
     const activeProfiles = await Profile.find({ status: 'active' });
@@ -284,7 +406,7 @@ app.post('/admin/resetPoints', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-app.post('/admin/resetPoints2', async (req, res) => {
+app.post('/admin/resetPoints2',isAuthenticated, async (req, res) => {
   try {
     // Находим все профили со статусом "active"
     const activeProfiles = await Profile.find({ status: 'inactive' });
@@ -303,7 +425,7 @@ app.post('/admin/resetPoints2', async (req, res) => {
 });
 
 // Маршрут для отображения страницы профилей для администратора
-app.get('/profiles_for_admin', async (req, res) => {
+app.get('/profiles_for_admin',isAuthenticated, async (req, res) => {
   try {
     const profiles = await Profile.find().sort({ points: -1 }).populate('achievements'); 
     const achievements = await Achievement.find();
@@ -317,7 +439,7 @@ app.get('/profiles_for_admin', async (req, res) => {
 
 
 // Маршрут для изменения статуса профиля
-app.post('/profiles_for_admin/change_status', async (req, res) => {
+app.post('/profiles_for_admin/change_status',isAuthenticated, async (req, res) => {
   try {
     const { profileId, status } = req.body;
 
@@ -356,7 +478,7 @@ app.get('/rating', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-app.get('/rating_for_admin', async (req, res) => {
+app.get('/rating_for_admin',isAuthenticated, async (req, res) => {
   try {
     // Получить список профилей, отсортированный по убыванию количества баллов
     const profiles = await Profile.find().sort({ points: -1 }).populate('achievements');
@@ -368,7 +490,7 @@ app.get('/rating_for_admin', async (req, res) => {
   }
 });
 // Маршрут для добавления баллов к профилю
-app.post('/rating_for_admin/addPoints', async (req, res) => {
+app.post('/rating_for_admin/addPoints',isAuthenticated, async (req, res) => {
   try {
       const { profileId, pointsToAdd } = req.body;
 
@@ -391,7 +513,9 @@ app.post('/rating_for_admin/addPoints', async (req, res) => {
       res.status(500).send('Internal Server Error');
   }
 });
-app.post('/rating_for_admin/addUserAchievement', async (req, res) => {
+
+
+app.post('/rating_for_admin/addUserAchievement',isAuthenticated, async (req, res) => {
   try {
     const { profileId, achievementId } = req.body;
 
@@ -421,32 +545,36 @@ app.post('/rating_for_admin/addUserAchievement', async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
-app.post('/rating_for_admin/updatePoints', async (req, res) => {
-    try {
-        const profiles = req.body.profiles;
-        if (!profiles) {
-            throw new Error("No profiles data received.");
+
+app.post('/rating_for_admin/updatePoints',isAuthenticated, async (req, res) => {
+  const profilesToUpdate = req.body.profiles;
+
+    for (const profile of profilesToUpdate) {
+        const profileId = profile.profileId;
+        const pointsToAdd = Number(profile.pointsToAdd);
+
+        // Find the profile in the database
+        const existingProfile = await Profile.findById(profileId);
+
+        if (existingProfile) {
+            // Update yearly points
+            existingProfile.points += pointsToAdd;
+
+            // Update cumulative points
+            existingProfile.cumulativePoints += pointsToAdd;
+
+            // Save the updated profile
+            await existingProfile.save();
         }
-
-        for (const profileData of Object.values(profiles)) {
-            const { profileId, pointsToAdd } = profileData;
-            const points = parseFloat(pointsToAdd) || 0;
-
-            await Profile.findByIdAndUpdate(profileId, {
-                $inc: { points: points }
-            });
-        }
-
-        res.redirect('/rating_for_admin');
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error updating points.');
     }
+
+    res.redirect('/rating_for_admin');
 });
 
 
+
 // Маршрут для отображения страницы редактирования профиля
-app.get('/edit_profile/:profileId', async (req, res) => {
+app.get('/edit_profile/:profileId',isAuthenticated, async (req, res) => {
   try {
     const profileId = req.params.profileId;
     const profile = await Profile.findById(profileId);
@@ -461,7 +589,7 @@ app.get('/edit_profile/:profileId', async (req, res) => {
 });
 
 // Маршрут для обновления данных профиля
-app.post('/edit_profile/:profileId', upload.single('photo'), async (req, res) => {
+app.post('/edit_profile/:profileId',isAuthenticated, upload.single('photo'), async (req, res) => {
   try {
     const profileId = req.params.profileId;
     const { name, details } = req.body;
@@ -479,6 +607,114 @@ app.post('/edit_profile/:profileId', upload.single('photo'), async (req, res) =>
     res.status(500).send('Internal Server Error');
   }
 });
+
+app.get('/groups', async (req, res) => {
+  try {
+    // Получаем группы с участниками и их достижениями
+    const groups = await Group.find()
+      .populate({
+        path: 'members',
+        populate: { path: 'achievements' },
+      });
+
+    // Вычисляем общий балл для каждой группы
+    groups.forEach(group => {
+      group.totalPoints = group.members.reduce((sum, member) => sum + (member.points || 0), 0);
+    });
+
+    // Сортируем группы по количеству баллов в порядке убывания
+    groups.sort((a, b) => b.totalPoints - a.totalPoints);
+
+    res.render('groups', { groups }); // Рендерим отсортированные группы
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+app.get('/admin_groups',isAuthenticated, async (req, res) => {
+  try {
+    // Получаем группы с участниками и их достижениями
+    const groups = await Group.find()
+      .populate({
+        path: 'members', // Связь с участниками
+        populate: { path: 'achievements' }, // Подгрузка достижений для участников
+      });
+    const profiles = await Profile.find().populate('achievements'); 
+
+// Добавляем общий балл для каждой группы
+groups.forEach(group => {
+  group.totalPoints = group.members.reduce((sum, member) => sum + (member.points || 0), 0);
+});
+    res.render('admin_groups', { profiles, groups });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
+app.post('/admin_groups/create',isAuthenticated, upload.single('image'), async (req, res) => {
+  try {
+    const { name, color, members } = req.body;
+
+    // Загрузка изображения в Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path);
+
+    // Создание новой группы
+    const newGroup = new Group({
+      name,
+      image: result.secure_url,
+      color,
+      members: Array.isArray(members) ? members : [members] // Убедимся, что это массив
+    });
+
+    await newGroup.save();
+    res.redirect('/admin_groups');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/admin_groups/edit/:groupId',isAuthenticated, upload.single('image'), async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { name, color, members } = req.body;
+
+    let imageUrl;
+    if (req.file) {
+      // Если новое изображение было загружено
+      const result = await cloudinary.uploader.upload(req.file.path);
+      imageUrl = result.secure_url;
+    }
+
+    await Group.findByIdAndUpdate(groupId, {
+      name,
+      color,
+      image: imageUrl || req.body.currentImageUrl, // Используем новое или текущее изображение
+      members: Array.isArray(members) ? members : [members]
+    });
+
+    res.redirect('/admin_groups');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+app.post('/admin_groups/delete',isAuthenticated, async (req, res) => {
+  try {
+    const { groupId } = req.body;
+    await Group.findByIdAndDelete(groupId);
+    res.redirect('/admin_groups');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 
 
 app.listen(port, () => {

@@ -30,6 +30,9 @@
                             <a class="main-page-link" href="/profiles">
                                 <img class="img-nav" src="img/user.png" alt="user"><span>Profiles</span>
                             </a>
+                            <a class="main-page-link" href="/groups">
+                                <img class="img-nav" src="img/group.png" alt="groups"><span>Groups</span>
+                            </a>
                         </div>
                     </div>
                 </li>
@@ -48,21 +51,20 @@
                         <img class="img-nav" src="img/user.png" alt="user"><span>Profiles</span>
                     </a>
                 </li>
+                <li class="li-nav">
+                    <a class="main-page-link" href="/groups">
+                        <img class="img-nav" src="img/group.png" alt="groups"><span>Groups</span>
+                    </a>
+                </li>
             </ul>
         </nav>
     </div>
     <div class="container">
-        
-    <img src="img/1.png" alt="photo" style="border-radius: 10px;" class="achievpng">
-    <img src="img/2.png" alt="photo" style="border-radius: 10px;" class="achievpng">
-    <img src="img/3.png" alt="photo" style="border-radius: 10px;" class="achievpng">
-    <img src="img/4.png" alt="photo" style="border-radius: 10px;" class="achievpng">
-    <img src="img/5.png" alt="photo" style="border-radius: 10px;" class="achievpng">
-    <img src="img/6.png" alt="photo" style="border-radius: 10px;" class="achievpng">
-    <img src="img/5.png" alt="photo" style="border-radius: 10px;" class="achievpng">
-    <img src="img/6.png" alt="photo" style="border-radius: 10px;" class="achievpng">
-
-</div>
+        <% images.forEach(image => { %>
+          <img src="<%= image.url %>" alt="<%= image.description %>" style="border-radius: 10px;" class="achievpng">
+        <% }) %>
+      </div>
+      
     <footer>
         <div id="footer" class="container">
                 <a href="Apoyando.html">© Apoyando</a>

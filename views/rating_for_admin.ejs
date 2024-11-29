@@ -13,7 +13,7 @@
     <h1>Rating (Admin)</h1>
 </header>
 <div id="div-nav" class="container">
-    <a href="/"><img src="img/guitar.png" alt="guitar" class="logo" width="25px"></a> <!-- Adjusted image source -->
+    <a href="/admin_images"><img src="img/guitar.png" alt="guitar" class="logo" width="25px"></a> <!-- Adjusted image source -->
     <nav class="navbar">
         <ul class="ul-nav-left">
             <li class="li-nav">
@@ -28,9 +28,16 @@
             <li class="li-nav">
                 <a class="main-page-link" href="/achievements"><img class="img-nav" src="img/achiev.png" alt="achiev"><span>Achievement</span></a>
             </li>
+            <li class="li-nav">
+            <a class="main-page-link" href="/admin_groups">
+                <img class="img-nav" src="img/group.png" alt="groups"><span>Groups</span>
+            </a>
+        </li>
         </ul>
     </nav>
 </div>
+
+
 <div class="container">
 <section class="table-sec">
     <h2 id="year" style="text-align: center;"></h2>
@@ -42,6 +49,7 @@
                     <th>Position</th>
                     <th>Name</th>
                     <th>Points</th>
+                    <th>All Points</th>
                     <th>Add Points</th>
                 </tr>
             </thead>
@@ -53,6 +61,7 @@
                             <td><%= customIndex %></td>
                             <td><%= profile.name %></td>
                             <td><%= profile.points %></td>
+                            <td><%= profile.cumulativePoints %></td> <!-- New column for cumulative points -->
                             <td onclick="event.stopPropagation();">
                                 <input type="hidden" name="profiles[<%= customIndex %>][profileId]" value="<%= profile._id %>">
                                 <input type="number" class="pointsToAdd" name="profiles[<%= customIndex %>][pointsToAdd]" placeholder="Enter points">
@@ -62,6 +71,7 @@
                     <% } %>
                 <% }); %>
             </tbody>
+            
         </table>
         <button type="submit">Update All Points</button>
     </form>
@@ -78,6 +88,7 @@
                     <th>Position</th>
                     <th>Name</th>
                     <th>Points</th>
+                    <th>All Points</th>
                     <th>Add Points</th>
                 </tr>
             </thead>
@@ -89,12 +100,13 @@
                             <td><%= customIndex5 %></td>
                             <td><%= profile.name %></td>
                             <td><%= profile.points %></td>
+                            <td><%= profile.cumulativePoints %></td>
                             <td onclick="event.stopPropagation();">
-                                <input type="hidden" name="profiles[<%= customIndex %>][profileId]" value="<%= profile._id %>">
-                                <input type="number" class="pointsToAdd" name="profiles[<%= customIndex %>][pointsToAdd]" placeholder="Enter points">
+                                <input type="hidden" name="profiles[<%= customIndex5 %>][profileId]" value="<%= profile._id %>">
+                                <input type="number" class="pointsToAdd" name="profiles[<%= customIndex5 %>][pointsToAdd]" placeholder="Enter points">
                             </td>
                         </tr>
-                        <% customIndex++; %>    
+                        <% customIndex5++; %>    
                     <% } %>
                 <% }); %>
             </tbody>
@@ -184,6 +196,7 @@
     var currentYear = new Date().getFullYear();        
     document.getElementById("year").innerHTML = "Rating "+currentYear;
 </script>
+
 
 </body>
 </html>

@@ -30,6 +30,9 @@
                         <a class="main-page-link" href="/profiles">
                             <img class="img-nav" src="img/user.png" alt="user"><span>Profiles</span>
                         </a>
+                        <a class="main-page-link" href="/groups">
+                            <img class="img-nav" src="img/group.png" alt="groups"><span>Groups</span>
+                        </a>
                     </div>
                 </div>
             </li>
@@ -46,6 +49,11 @@
             <li class="li-nav">
                 <a class="main-page-link" href="/profiles">
                     <img class="img-nav" src="img/user.png" alt="user"><span>Profiles</span>
+                </a>
+            </li>
+            <li class="li-nav">
+                <a class="main-page-link" href="/groups">
+                    <img class="img-nav" src="img/group.png" alt="groups"><span>Groups</span>
                 </a>
             </li>
         </ul>
@@ -98,13 +106,42 @@
                         <td><%= profile.name %></td>
                         <td><%= profile.points %></td>
                     </tr>
-                    <% customIndex++; %>
+                    <% customIndex1++; %>
                     <% } %>
                 <% }); %>
             </tbody>
         </table>
     </section>
 </div>
+
+<div class="container">
+    <section class="table-sec">
+        <h2 style="text-align: center;">Рейтинг за все время</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Position</th>
+                    <th>Name</th>
+                    <th>All Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% let customIndex5 = 1; %>
+                <% profiles.forEach((profile) => { %>
+                   
+                    <tr onclick="showDetails('<%= profile.name %>', '<%= profile.details %>', '<%= profile.points %>','<%= profile.status %>' , '<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')"  <% if (customIndex5 == 1 ) { %> class="gold" <% } else if (customIndex5 == 2) { %> class="red"  <% } else if (customIndex5 == 3 ) { %> class="green"  <% } else if (customIndex5 > 3 && customIndex5 <= 10 ) { %> class="blue" <% } else if (customIndex5 > 10 && customIndex5 <= 20 ) { %> class="gray"  <% } else if (customIndex5 > 20 ) { %> class="other"  <% } %>>
+                        <td><%= customIndex5 %></td>
+                        <td><%= profile.name %></td>
+                        <td><%= profile.cumulativePoints %></td>
+                    </tr>
+                    <% customIndex5++; %>
+                    
+                <% }); %>
+            </tbody>
+        </table>
+    </section>
+</div>
+
 <!-- Modal -->
 <div id="myModal" class="modal">
     <div class="modal-content">
