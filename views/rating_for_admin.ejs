@@ -115,6 +115,44 @@
     </form>
     </section>
 </div>
+<div class="container">
+    <section class="table-sec">
+        <h2 style="text-align: center;">InActive</h2>
+         <!-- Форма для обновления баллов у всех профилей -->
+    <form id="updatePointsForm" action="/rating_for_admin/updatePoints" method="POST">
+        <table>
+            <thead>
+                <tr>
+                    <th>Position</th>
+                    <th>Name</th>
+                    <th>Points</th>
+                    <th>All Points</th>
+                    <th>Add Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% let customIndex7 = 1; %>
+                <% profiles.forEach((profile) => { %>
+                    <% if (profile.status === 'inactive') { %>
+                        <tr onclick="showDetailsAndAddAchievement('<%= profile._id %>', '<%= profile.name %>', '<%= profile.details %>', '<%= profile.points %>' ,'<%= profile.status %>' , '<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')" class="gray">
+                            <td><%= customIndex7 %></td>
+                            <td><%= profile.name %></td>
+                            <td><%= profile.points %></td>
+                            <td><%= profile.cumulativePoints %></td>
+                            <td onclick="event.stopPropagation();">
+                                <input type="hidden" name="profiles[<%= customIndex7 %>][profileId]" value="<%= profile._id %>">
+                                <input type="number" class="pointsToAdd" name="profiles[<%= customIndex7 %>][pointsToAdd]" placeholder="Enter points">
+                            </td>
+                        </tr>
+                        <% customIndex7++; %>    
+                    <% } %>
+                <% }); %>
+            </tbody>
+        </table>
+        <button type="submit">Update All Points</button>
+    </form>
+    </section>
+</div>
 <!-- Modal -->
 <div id="myModal" class="modal">
     <div class="modal-content">
