@@ -471,8 +471,10 @@ app.get('/rating', async (req, res) => {
   try {
     // Получить список профилей, отсортированный по убыванию количества баллов
     const profiles = await Profile.find().sort({ points: -1 }).populate('achievements');
+    // Получить список профилей, отсортированный по убыванию количества баллов
+    const profilesCumulative = await Profile.find().sort({ cumulativePoints: -1 }).populate('achievements');
     // Рендеринг страницы рейтинга с данными о профилях
-    res.render('rating', { profiles });
+    res.render('rating', { profiles, profilesCumulative });
   } catch (err) {
     console.error(err);
     res.status(500).send('Internal Server Error');
@@ -482,8 +484,10 @@ app.get('/rating_for_admin',isAuthenticated, async (req, res) => {
   try {
     // Получить список профилей, отсортированный по убыванию количества баллов
     const profiles = await Profile.find().sort({ points: -1 }).populate('achievements');
+        // Получить список профилей, отсортированный по убыванию количества баллов
+        const profilesCumulative = await Profile.find().sort({ cumulativePoints: -1 }).populate('achievements');
     const achievements = await Achievement.find();
-    res.render('rating_for_admin', { profiles, achievements });
+    res.render('rating_for_admin', { profiles, achievements, profilesCumulative});
   } catch (err) {
     console.error(err);
     res.status(500).send('Internal Server Error');
