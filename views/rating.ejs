@@ -99,12 +99,12 @@
             </thead>
             <tbody>
                 <% let customIndex1 = 1; %>
-                <% profiles.forEach((profile) => { %>
+                <% profilesCumulative.forEach((profile) => { %>
                     <% if (profile.status === 'legend') { %>
                     <tr onclick="showDetails('<%= profile.name %>', '<%= profile.details %>', '<%= profile.points %>','<%= profile.status %>' , '<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')"  class="gold">
                         <td><%= customIndex1 %></td>
                         <td><%= profile.name %></td>
-                        <td><%= profile.points %></td>
+                        <td><%= profile.cumulativePoints %></td>
                     </tr>
                     <% customIndex1++; %>
                     <% } %>
@@ -127,7 +127,7 @@
             </thead>
             <tbody>
                 <% let customIndex5 = 1; %>
-                <% profiles.forEach((profile) => { %>
+                <% profilesCumulative.forEach((profile) => { %>
                    
                     <tr onclick="showDetails('<%= profile.name %>', '<%= profile.details %>', '<%= profile.points %>','<%= profile.status %>' , '<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')"  <% if (customIndex5 == 1 ) { %> class="gold" <% } else if (customIndex5 == 2) { %> class="red"  <% } else if (customIndex5 == 3 ) { %> class="green"  <% } else if (customIndex5 > 3 && customIndex5 <= 10 ) { %> class="blue" <% } else if (customIndex5 > 10 && customIndex5 <= 20 ) { %> class="gray"  <% } else if (customIndex5 > 20 ) { %> class="other"  <% } %>>
                         <td><%= customIndex5 %></td>
