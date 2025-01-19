@@ -39,7 +39,7 @@
 <div class="container">
     <section class="cards">
         <% profiles.forEach(profile => { %>
-            <div class="profile-card" onclick="showDetailsAndAddAchievement('<%= profile._id %>', '<%= profile.name %>', '<%= profile.details %>', '<%= profile.points %>' , '<%= profile.status %>','<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')">
+            <div class="profile-card" onclick="showDetailsAndAddAchievement('<%= profile._id %>', '<%= profile.name %>', '<%= profile.details %>', '<%= profile.cumulativePoints %>' , '<%= profile.status %>','<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')">
                 <img class="profile-img" src="<%= profile.photo %>" alt="<%= profile.name %>">
                 <p style="font-weight: bold; "><%= profile.name %></p>
             </div>
@@ -74,7 +74,7 @@
 </footer>
 
 <script>
-    function showDetailsAndAddAchievement(profileId, name, details,points,status,photo, achievements) {
+    function showDetailsAndAddAchievement(profileId, name, details,cumulativePoints,status,photo, achievements) {
         var modal = document.getElementById("myModal");
         var modalDetails = document.getElementById("modal-details");
 
@@ -93,7 +93,7 @@
         "<img src='" + photo + "' alt='" + name + "' class='profile-img'>"+
         "<p>" + details + "</p>" +
         "<p>" + status + "</p>" +
-        "<p>" + points + "</p>";
+        "<p>" + cumulativePoints + "</p>";
 
             // If there are achievements, add them to modal content
             if (parsedAchievements.length > 0) {
