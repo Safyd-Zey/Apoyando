@@ -94,7 +94,7 @@
             </thead>
             <tbody>
                 <% let customIndex5 = 1; %>
-                <% profiles.forEach((profile) => { %>
+                <% profilesCumulative.forEach((profile) => { %>
                     <% if (profile.status === 'legend') { %>
                         <tr onclick="showDetailsAndAddAchievement('<%= profile._id %>', '<%= profile.name %>', '<%= profile.details %>', '<%= profile.points %>' ,'<%= profile.status %>' , '<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')" class="gold">
                             <td><%= customIndex5 %></td>
@@ -132,7 +132,8 @@
             </thead>
             <tbody>
                 <% let customIndex7 = 1; %>
-                <% profiles.forEach((profile) => { %>
+                <% profilesCumulative.forEach((profile) => { %>
+
                     <% if (profile.status === 'inactive') { %>
                         <tr onclick="showDetailsAndAddAchievement('<%= profile._id %>', '<%= profile.name %>', '<%= profile.details %>', '<%= profile.points %>' ,'<%= profile.status %>' , '<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')" class="gray">
                             <td><%= customIndex7 %></td>
