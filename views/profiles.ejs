@@ -64,7 +64,7 @@
 <div class="container">
     <section class="cards">
         <% profiles.forEach(profile => { %>
-       <div class="profile-card" onclick="showDetails('<%= profile.name %>', '<%= profile.details %>', '<%= profile.points %>','<%= profile.status %>' , '<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')">
+       <div class="profile-card" onclick="showDetails('<%= profile.name %>', '<%= profile.details %>',  '<%= profile.cumulativePoints %>','<%= profile.status %>' , '<%= profile.photo %>', '<%= JSON.stringify(profile.achievements) %>')">
 
             <img class="profile-img" src="<%= profile.photo %>" alt="<%= profile.name %>">
             <p style="font-weight: bold;text-align: center;"><%= profile.name %></p>
@@ -94,7 +94,7 @@
 
 <script>
     // JavaScript function to show details in modal
-    function showDetails(name, details,points,status, photo, achievements) {
+    function showDetails(name, details,cumulativePoints,status, photo, achievements) {
     var modal = document.getElementById("myModal");
     var modalDetails = document.getElementById("modal-details");
 
@@ -109,7 +109,7 @@
         "<img src='" + photo + "' alt='" + name + "' class='profile-img'>"+
         "<p>" + details + "</p>" +
         "<p>" + status + "</p>" +
-        "<p>" + points + "</p>";
+        "<p>" + cumulativePoints + "</p>";
 
     // If there are achievements, add them to modal content
     if (parsedAchievements.length > 0) {
@@ -131,48 +131,3 @@
 </script>
 </body>
 </html>
-<!-- Modal -->
-<div id="myModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal()">&times;</span>
-        <div id="modal-details"></div>
-    </div>
-</div>
-<script>
-    // JavaScript function to show details in modal
-    function showDetails(name, details,points,status, photo, achievements) {
-    var modal = document.getElementById("myModal");
-    var modalDetails = document.getElementById("modal-details");
-
-    // Display modal
-    modal.style.display = "block";
-
-    // Parse achievements from JSON string to array of objects
-    var parsedAchievements = JSON.parse(achievements);
-
-    // Populate modal with details
-    modalDetails.innerHTML = "<h2>" + name + "</h2>" +
-        "<img src='" + photo + "' alt='" + name + "' class='profile-img'>"+
-        "<p>" + details + "</p>" +
-        "<p>" + status + "</p>" +
-        "<p>" + points + "</p>";
-
-    // If there are achievements, add them to modal content
-    if (parsedAchievements.length > 0) {
-        var achievementsHTML = "<ul>";
-        parsedAchievements.forEach(function(achievement) {
-            achievementsHTML += "<li data-tooltip='"+ achievement.achievement+ ". "+ achievement.description +".'>"+"<img src='"+ achievement.photo +"' alt='achievement' class='achievement-img'>" +"</li>";
-        });
-        achievementsHTML += "</ul>";
-        modalDetails.innerHTML += achievementsHTML;
-    }
-}
-
-
-    // Close modal function
-    function closeModal() {
-        var modal = document.getElementById("myModal");
-        modal.style.display = "none";
-    }
-</script>
-
