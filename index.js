@@ -120,7 +120,7 @@ function isAuthenticated(req, res, next) {
 // Маршрут для отображения профилей
 app.get('/profiles', async(req,res)=>{
   try {
-    const profiles = await Profile.find().sort({ points: -1 }).populate('achievements'); // Загружаем достижения для каждого профиля
+    const profiles = await Profile.find().sort({ cumulativePoints: -1 }).populate('achievements'); // Загружаем достижения для каждого профиля
       res.render('profiles', { profiles });
   } catch (err) {
       console.error(err);
@@ -427,7 +427,7 @@ app.post('/admin/resetPoints2',isAuthenticated, async (req, res) => {
 // Маршрут для отображения страницы профилей для администратора
 app.get('/profiles_for_admin',isAuthenticated, async (req, res) => {
   try {
-    const profiles = await Profile.find().sort({ points: -1 }).populate('achievements'); 
+    const profiles = await Profile.find().sort({ cumulativePoints: -1 }).populate('achievements'); 
     const achievements = await Achievement.find();
     res.render('profiles_for_admin', { profiles, achievements });
   } catch (err) {
