@@ -81,6 +81,28 @@ const imageSchema = new mongoose.Schema({
 });
 
 const Image = mongoose.model('Image', imageSchema);
+
+const AdminActionLogSchema = new mongoose.Schema({
+  action: String,
+  profileId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Profile'
+  },
+  profileName: String,
+  pointsAdded: Number,
+  achievementId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Achievement'
+  },
+  achievementName: String,
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const AdminActionLog = mongoose.model('AdminActionLog', AdminActionLogSchema);
+
 // Указываем директорию для хранения загруженных файлов
 const storage = multer.diskStorage({});
 const upload = multer({ storage: storage });
@@ -471,10 +493,17 @@ app.get('/rating', async (req, res) => {
   try {
     // Получить список профилей, отсортированный по убыванию количества баллов
     const profiles = await Profile.find().sort({ points: -1 }).populate('achievements');
-    // Получить список профилей, отсортированный по убыванию количества баллов
-    const profilesCumulative = await Profile.find().sort({ cumulativePoints: -1 }).populate('achievements');
-    // Рендеринг страницы рейтинга с данными о профилях
-    res.render('rating', { profiles, profilesCumulative });
+        // Получить список профилей, отсортированный по убыванию количества баллов
+        const profilesCumulative = await Profile.find().sort({ cumulativePoints: -1 }).populate('achievements');
+    const achievements = await Achievement.find();
+    const adminLogs = await AdminActionLog.find().sort({ createdAt: -1 }).limit(500);
+  
+    res.render('rating', {
+      profiles,
+      profilesCumulative,
+      achievements,
+      adminLogs
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send('Internal Server Error');
@@ -487,12 +516,21 @@ app.get('/rating_for_admin',isAuthenticated, async (req, res) => {
         // Получить список профилей, отсортированный по убыванию количества баллов
         const profilesCumulative = await Profile.find().sort({ cumulativePoints: -1 }).populate('achievements');
     const achievements = await Achievement.find();
-    res.render('rating_for_admin', { profiles, achievements, profilesCumulative});
+    const adminLogs = await AdminActionLog.find().sort({ createdAt: -1 }).limit(500);
+  
+    res.render('rating_for_admin', {
+      profiles,
+      profilesCumulative,
+      achievements,
+      adminLogs
+    });
   } catch (err) {
     console.error(err);
     res.status(500).send('Internal Server Error');
   }
 });
+
+
 // Маршрут для добавления баллов к профилю
 app.post('/rating_for_admin/addPoints',isAuthenticated, async (req, res) => {
   try {
@@ -520,59 +558,48 @@ app.post('/rating_for_admin/addPoints',isAuthenticated, async (req, res) => {
 
 
 app.post('/rating_for_admin/addUserAchievement',isAuthenticated, async (req, res) => {
-  try {
-    const { profileId, achievementId } = req.body;
+  const { profileId, achievementId } = req.body;
+  const profile = await Profile.findById(profileId);
+  const achievement = await Achievement.findById(achievementId);
 
-    // Find profile by id
-    const userProfile = await Profile.findById(profileId);
+  profile.achievements.push(achievement);
+  await profile.save();
 
-    if (!userProfile) {
-      return res.status(404).send('User not found');
-    }
+  await AdminActionLog.create({
+    action: `Added achievement "${achievement.achievement}" to ${profile.name}`,
+    profileId: profile._id,
+    profileName: profile.name,
+    achievementId: achievement._id,
+    achievementName: achievement.achievement
+  });
 
-    // Find achievement by id
-    const achievement = await Achievement.findById(achievementId);
-
-    if (!achievement) {
-      return res.status(404).send('Achievement not found');
-    }
-
-    // Add achievement to user profile
-    userProfile.achievements.push(achievement);
-
-    // Save updated profile
-    await userProfile.save();
-
-    res.redirect('/rating_for_admin');
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Internal Server Error');
-  }
+  res.redirect('/rating_for_admin');
 });
 
-app.post('/rating_for_admin/updatePoints',isAuthenticated, async (req, res) => {
-  const profilesToUpdate = req.body.profiles;
 
-    for (const profile of profilesToUpdate) {
-        const profileId = profile.profileId;
-        const pointsToAdd = Number(profile.pointsToAdd);
+app.post('/rating_for_admin/updatePoints',isAuthenticated ,async (req, res) => {
+  const { profiles } = req.body;
 
-        // Find the profile in the database
-        const existingProfile = await Profile.findById(profileId);
+  for (let index in profiles) {
+    const profileId = profiles[index].profileId;
+    const pointsToAdd = parseInt(profiles[index].pointsToAdd);
 
-        if (existingProfile) {
-            // Update yearly points
-            existingProfile.points += pointsToAdd;
+    if (!isNaN(pointsToAdd) && pointsToAdd !== 0) {
+      const profile = await Profile.findById(profileId);
+      profile.points += pointsToAdd;
+      profile.cumulativePoints += pointsToAdd;
+      await profile.save();
 
-            // Update cumulative points
-            existingProfile.cumulativePoints += pointsToAdd;
-
-            // Save the updated profile
-            await existingProfile.save();
-        }
+      await AdminActionLog.create({
+        action: `Added ${pointsToAdd} points to ${profile.name}`,
+        profileId: profile._id,
+        profileName: profile.name,
+        pointsAdded: pointsToAdd
+      });
     }
+  }
 
-    res.redirect('/rating_for_admin');
+  res.redirect('/rating_for_admin');
 });
 
 

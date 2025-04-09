@@ -1,7 +1,6 @@
 {
   "name": "apoyando2",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "engines": {
     "node": "20.x"
@@ -27,5 +26,14 @@
     "multer-storage-cloudinary": "^4.0.0",
     "netlify-lambda": "^2.0.16",
     "serverless-http": "^3.2.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Safyd-Zey/Apoyando.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Safyd-Zey/Apoyando/issues"
+  },
+  "homepage": "https://github.com/Safyd-Zey/Apoyando#readme",
+  "description": ""
 }

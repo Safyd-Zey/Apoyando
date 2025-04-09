@@ -601,3 +601,19 @@ tbody tr:hover {
   .login-container a:hover {
     text-decoration: underline;
   }
+
+  .admin-actions-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.admin-actions-list li {
+    padding: 8px 12px;
+    border-bottom: 1px solid #ddd;
+}
+.admin-actions-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
