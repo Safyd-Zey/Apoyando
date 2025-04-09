@@ -8,6 +8,8 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const session = require('express-session');
 const flash = require('connect-flash');
+const cron = require('node-cron');
+const axios = require('axios');
 
 const app = express();
 const port = 3000;
@@ -157,6 +159,15 @@ app.get('/', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send('Internal Server Error');
+  }
+});
+
+// Настройка cron для выполнения задачи каждую минуту
+cron.schedule('* * * * *', async () => {
+  try {
+      const response = await axios.get('http://localhost:3000/profiles');
+  } catch (error) {
+      console.error('Error sending GET request to /profiles:', error);
   }
 });
 
@@ -566,7 +577,7 @@ app.post('/rating_for_admin/addUserAchievement',isAuthenticated, async (req, res
   await profile.save();
 
   await AdminActionLog.create({
-    action: `Added achievement "${achievement.achievement}" to ${profile.name}`,
+    action: `${profile.name} получил достижение "${achievement.achievement}"`,
     profileId: profile._id,
     profileName: profile.name,
     achievementId: achievement._id,
@@ -591,7 +602,7 @@ app.post('/rating_for_admin/updatePoints',isAuthenticated ,async (req, res) => {
       await profile.save();
 
       await AdminActionLog.create({
-        action: `Added ${pointsToAdd} points to ${profile.name}`,
+        action: `Добавлено ${pointsToAdd} балла ${profile.name}`,
         profileId: profile._id,
         profileName: profile.name,
         pointsAdded: pointsToAdd
